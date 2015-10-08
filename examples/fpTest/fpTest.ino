@@ -14,7 +14,7 @@
 //FP_FOUND 0x39
 //FP_UNFOUND 0x3A
 
-SM630_fprint fp(2,3);
+SM630_fprint fp(10,11);// rx, tx
 
 void setup() {
   // put your setup code here, to run once:
@@ -24,6 +24,7 @@ void setup() {
   Serial.println("Send 'a' to add fingerprint");
   Serial.println("Send 's' to search fingerprint");
   Serial.println("Send 'd' to delete fingerprint");
+  Serial.println("Send 'w' to upload template from module");
   Serial.println();
 }
 
@@ -42,7 +43,9 @@ void serialEvent()
     else if (inChar=='s')
       search_fingerprint();
     else if (inChar=='d')
-      del_fingerprint();   
+      del_fingerprint();
+    else if( inChar=='w')
+      uploadTemplate();   
   }
 }
 
@@ -130,4 +133,55 @@ void del_fingerprint()
     Serial.println("ID is not valid");
 
 }
+
+void uploadTemplate()
+{
+  String inputString="";
+  boolean isNum = true;
+
+  Serial.println("Uploading template from module...");
+  Serial.println("Type designated ID...");
+  while(Serial.available()==0);
+  while (Serial.available()) 
+    {
+      char inChar = (char)Serial.read();
+      if (!isDigit(inChar)) isNum = false;
+      inputString += inChar;
+      delay(10);
+    }
+
+  if(isNum)
+  {
+    Serial.print("ID: ");
+    Serial.println(inputString.toInt());
+    unsigned char templ[256];
+    fp.uploadTemplate(inputString.toInt(), templ);
+    if(fp.feedback==0x31)
+    {
+      Serial.println("Operation successful");
+      Serial.println("Printing result...");
+      printOutHex(templ);
+    }
+    else
+    {
+      Serial.print("Error: ");
+      Serial.println(fp.feedback,HEX);
+    }
+  }
+  else
+    Serial.println("ID is not valid");
+}
+
+void printOutHex(unsigned char *temp)
+{
+  for(int i = 0;i<256;i++)
+  {
+    Serial.print("0x");
+    if(temp[i]<=0x0F) Serial.print("0");
+    Serial.print(temp[i],HEX);
+    if(i>0&&i%16==15) Serial.println();
+    else Serial.print(" ");
+  }
+}
+
 

@@ -59,7 +59,7 @@ class SM630_fprint
     boolean wrFlash(int addr,unsigned long num);
     boolean wrFlash(int addr,const char* data);
     String rdFlash(int addr,byte data_length);
-	boolean uploadTemplate(int id, char *templ);
+	boolean uploadTemplate(int id, unsigned char *templ);
 	
 	int fprint_id;
 	byte feedback;

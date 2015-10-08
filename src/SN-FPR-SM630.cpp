@@ -411,7 +411,7 @@ String SM630_fprint::rdFlash(int addr,byte data_length)
 *
 *******************************************************************************/
 
-boolean SM630_fprint::uploadTemplate(int id, char *templ)
+boolean SM630_fprint::uploadTemplate(int id, unsigned char *templ)
 {
 	if(!isHardwareSerial) mySerial->listen();
 	
