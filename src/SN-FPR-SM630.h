@@ -57,7 +57,7 @@ class SM630_fprint
     boolean matching(int id);
     boolean wrFlash(int addr,String data2wr);
     boolean wrFlash(int addr,unsigned long num);
-    boolean wrFlash(int addr,char* data);
+    boolean wrFlash(int addr,const char* data);
     String rdFlash(int addr,byte data_length);
 	boolean uploadTemplate(int id, char *templ);
 	

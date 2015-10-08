@@ -195,10 +195,7 @@ boolean SM630_fprint::matching(int id)
 
 boolean SM630_fprint::wrFlash(int addr,String data2wr)
 {
-  char data[data2wr.length()+1];
-  data2wr.toCharArray(data,data2wr.length()+1);
-  
-  return wrFlash(addr,data);
+  return wrFlash(addr,data2wr.c_str());
 
 }
 
@@ -235,7 +232,7 @@ boolean SM630_fprint::wrFlash(int addr,unsigned long num)
 *
 *******************************************************************************/
 
-boolean SM630_fprint::wrFlash(int addr,char* data)
+boolean SM630_fprint::wrFlash(int addr, const char* data)
 {
    if(sizeof(data)>128)
   {
@@ -243,21 +240,23 @@ boolean SM630_fprint::wrFlash(int addr,char* data)
     return false;
   }
   
-  byte wr_data[sizeof(data)+9];
+  byte wr_data[strlen(data)+10];
   byte checksum = 0;
   byte i;
   
   wr_data[0] = 0x4D;
   wr_data[1] = 0x58;
   wr_data[2] = 0x10;
-  wr_data[3] = 4 + sizeof(data);
+  wr_data[3] = 5 + strlen(data);
   wr_data[4] = 0x64;
   wr_data[5] = addr/256;
   wr_data[6] = addr%256;
-  wr_data[7] = sizeof(data);
+  wr_data[7] = strlen(data)+1;
   
-  for(i = 0;i<sizeof(data);i++) 
+  for(i = 0;i<strlen(data);i++) 
    wr_data[i+8] = data[i];
+	
+  wr_data[8+strlen(data)]= '\0';
   
   for(i=0;i<(sizeof(wr_data)-1);i++) 
    checksum+= wr_data[i];
@@ -325,7 +324,7 @@ boolean SM630_fprint::wrFlash(int addr,char* data)
 *******************************************************************************/
 String SM630_fprint::rdFlash(int addr,byte data_length)
 {
-  if(sizeof(data_length)>128)
+  if(data_length>128)
   {
     feedback = PARAMETER_ERR;
     return "";
@@ -388,8 +387,9 @@ String SM630_fprint::rdFlash(int addr,byte data_length)
 		mySerial->readBytes(rx,sizeof(rx));
 	}
 
-  char dat[data_length];
+  char dat[data_length+1];
   for(i=0;i<data_length;i++) dat[i] = rx[i+5];  
+  dat[data_length]='\0';
   
   feedback = OP_SUCCESS;
 
