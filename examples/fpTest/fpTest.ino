@@ -1,6 +1,19 @@
 #include <SN-FPR-SM630.h>
 #include <SoftwareSerial.h>
 
+//Hex error code
+//RX_CORRECT 0x01
+//RX_ERROR 0x02
+//OP_SUCCESS 0x31
+//FP_DETECTED 0x32
+//TIME_OUT 0x33
+//PROCESS_FAILED 0x34
+//PARAMETER_ERR 0x35
+//MATCH 0x37
+//NO_MATCH 0x38
+//FP_FOUND 0x39
+//FP_UNFOUND 0x3A
+
 SM630_fprint fp(2,3);
 
 void setup() {
@@ -37,9 +50,16 @@ void search_fingerprint()
 {
   Serial.println("Searching fingerprint...");
   if(fp.search_fingerprint()) 
+  {
+    Serial.println("Fingerprint found");
+    Serial.print("ID: ");
     Serial.println(fp.fprint_id);
+  } 
   else
+  {
+    Serial.print("Error: ");
     Serial.println(fp.feedback,HEX);
+  }
 }
 
 void add_fingerprint()
@@ -48,6 +68,7 @@ void add_fingerprint()
   boolean isNum = true;;
   
   Serial.println("Adding fingerprint...");
+  Serial.println("Type designated ID...");
   while(Serial.available()==0);
   while (Serial.available()) 
     {
@@ -61,8 +82,15 @@ void add_fingerprint()
   {
     Serial.print("ID: ");
     Serial.println(inputString.toInt());
+    Serial.println("Place your finger on screen");
     fp.add_fingerprint(inputString.toInt());
-    Serial.println(fp.feedback,HEX);
+    if(fp.feedback==0x31)
+      Serial.println("Operation successful");
+    else
+    {
+      Serial.print("Error: ");
+      Serial.println(fp.feedback,HEX);
+    }
   }
   else
     Serial.println("ID is not valid");
@@ -75,6 +103,7 @@ void del_fingerprint()
   boolean isNum = true;
 
   Serial.println("Deleting fingerprint...");
+  Serial.println("Type designated ID...");
   while(Serial.available()==0);
   while (Serial.available()) 
     {
@@ -89,7 +118,13 @@ void del_fingerprint()
     Serial.print("ID: ");
     Serial.println(inputString.toInt());
     fp.del_fingerprint(inputString.toInt());
-    Serial.println(fp.feedback,HEX);
+    if(fp.feedback==0x31)
+      Serial.println("Operation successful");
+    else
+    {
+      Serial.print("Error: ");
+      Serial.println(fp.feedback,HEX);
+    }
   }
   else
     Serial.println("ID is not valid");
