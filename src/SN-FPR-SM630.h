@@ -1,3 +1,17 @@
+/******************************************************************************
+SN-FPR-SM630.h
+SM630 Fingerprint Module Library header file
+Created by Ng Beng Chet @ Cytron Technologies Sdn Bhd 
+Original Creation Date: Oct 8, 2015
+https://github.com/CytronTechnologies/Cytron_SN-FPR-SM630_Library
+
+Development environment specifics:
+	IDE: Arduino 1.6.5
+	Hardware Platform: Arduino 
+
+Distributed as-is; no warranty is given.
+******************************************************************************/
+
 #ifndef FPRINT_H
 #define FPRINT_H
 
@@ -33,11 +47,10 @@
 class SM630_fprint
 {
   public:
-    SM630_fprint();
-	SM630_fprint(byte rxpin, byte txpin);
+	
+	SM630_fprint(byte rxpin = 0, byte txpin = 1);
     void begin();
-	boolean search_fingerprint(int number);
-    boolean search_fingerprint(void);
+	boolean search_fingerprint(int number = 500);
     boolean add_fingerprint(int id);
     boolean del_fingerprint(int id);
     boolean empty_database();
@@ -46,17 +59,19 @@ class SM630_fprint
     boolean wrFlash(int addr,unsigned long num);
     boolean wrFlash(int addr,char* data);
     String rdFlash(int addr,byte data_length);
-	boolean uploadtemplate(int id, char *templ);
-	//unsigned char templ[128];
+	boolean uploadTemplate(int id, char *templ);
+	
 	int fprint_id;
 	byte feedback;
 
   private:
-    boolean IsSent;
-	boolean isHardwareSerial;
+    
 	void cmd(byte cmd_code,int number);
     void cmd(byte cmd_code);
     void resp(void);
+	
+	boolean IsSent;
+	boolean isHardwareSerial;
     byte _rxpin;
 	byte _txpin;
 	SoftwareSerial *mySerial;

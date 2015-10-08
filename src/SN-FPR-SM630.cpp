@@ -1,4 +1,20 @@
+/******************************************************************************
+SN-FPR-SM630.cpp
+SM630 Fingerprint Module Library
+Created by Ng Beng Chet @ Cytron Technologies Sdn Bhd 
+Original Creation Date: Oct 8, 2015
+https://github.com/CytronTechnologies/Cytron_SN-FPR-SM630_Library
+
+Development environment specifics:
+	IDE: Arduino 1.6.5
+	Hardware Platform: Arduino 
+
+Distributed as-is; no warranty is given.
+******************************************************************************/
+
 #include "SN-FPR-SM630.h"
+
+//Public
 
 SM630_fprint::SM630_fprint(byte rxpin, byte txpin){
 	_rxpin = rxpin;
@@ -7,9 +23,19 @@ SM630_fprint::SM630_fprint(byte rxpin, byte txpin){
 	fprint_id = -1;
 }
 
-SM630_fprint::SM630_fprint(){
-	SM630_fprint(0,1);
-}
+/*******************************************************************************
+* PUBLIC FUNCTION: begin
+*
+* PARAMETERS:
+* ~ void
+*
+* RETURN:
+* ~ void
+*
+* DESCRIPTIONS:
+* initialise the module
+*
+*******************************************************************************/
 
 void SM630_fprint::begin()
 {
@@ -27,212 +53,6 @@ void SM630_fprint::begin()
 	  mySerial->begin(57600);
   }
 
-}
-
-/*******************************************************************************
-* PUBLIC FUNCTION: cmd
-*
-* PARAMETERS:
-* ~ cmd_code,number
-*
-* RETURN:
-* ~ void
-*
-* DESCRIPTIONS:
-* send command to SM630_Fprint module
-*
-*******************************************************************************/
-void SM630_fprint::cmd(byte cmd_code,int number)
-{  
-  byte packet_content;
-  switch(cmd_code)
-  {
-    case SEARCH_FINGERPRINT:packet_content = 5;break;
-    case EMPTY_DATABASE:packet_content = 1;break;
-    default: packet_content = 3;break;
-  }
-  
-  byte Hbyte = number/256;
-  byte Lbyte = number%256; 
-  byte checksum = 0;
-  
-  byte send_cmd[packet_content+5];
-  
-  for(byte i=0;i<sizeof(send_cmd);i++) send_cmd[i]=0;
-  
-  send_cmd[0] = 0x4D;send_cmd[1] = 0x58;
-  send_cmd[2] = 0x10;send_cmd[3] = packet_content;
-  send_cmd[4] = cmd_code;
-  
-  for(byte i=0;i<sizeof(send_cmd);i++)
-  {
-    checksum+=send_cmd[i];
-  }
-
-  if(packet_content>=3)
-  {
-    send_cmd[5] = Hbyte;send_cmd[6] = Lbyte;
-    checksum+=send_cmd[5];
-    checksum+=send_cmd[6];
-    
-    if(cmd_code==SEARCH_FINGERPRINT)
-    {   
-      for(byte i=7;i>4;i--)
-      {
-        send_cmd[i+2]=send_cmd[i];
-      }
-      send_cmd[5] = 0;send_cmd[6] = 0;
-      checksum+=send_cmd[5];
-      checksum+=send_cmd[6];
-    }
-  }
-  
-  send_cmd[packet_content+5-1]=checksum;
-
-  if(isHardwareSerial)
-	Serial.write(send_cmd,sizeof(send_cmd));
-  else
-	  mySerial->write(send_cmd,sizeof(send_cmd));
-  
-  delay(1);
-  IsSent = true;
-  
-}
-
-/*******************************************************************************
-* PUBLIC FUNCTION: cmd
-*
-* PARAMETERS:
-* ~ cmd_code,number
-*
-* RETURN:
-* ~ void
-*
-* DESCRIPTIONS:
-* send command to SM630_Fprint module
-*
-*******************************************************************************/
-void SM630_fprint::cmd(byte cmd_code)
-{
-  byte packet_content;
-  switch(cmd_code)
-  {
-    case SEARCH_FINGERPRINT:packet_content = 5;break;
-    case EMPTY_DATABASE:packet_content = 1;break;
-    default: packet_content = 3;break;
-  }
-  
-  byte checksum = 0;
-  
-  byte send_cmd[packet_content+5];
-  
-  for(byte i=0;i<sizeof(send_cmd);i++) send_cmd[i]=0;
-  
-  send_cmd[0] = 0x4D;send_cmd[1] = 0x58;
-  send_cmd[2] = 0x10;send_cmd[3] = packet_content;
-  send_cmd[4] = cmd_code;
-  
-  for(byte i=0;i<sizeof(send_cmd);i++)
-  {
-    checksum+=send_cmd[i];
-  }
-  
-  send_cmd[packet_content+5-1]=checksum;
-
-  if(isHardwareSerial)
-	Serial.write(send_cmd,sizeof(send_cmd));
-  else
-	  mySerial->write(send_cmd,sizeof(send_cmd));
-  
-  delay(1);
-  IsSent = true;
-  
-}
-
-/*******************************************************************************
-* PUBLIC FUNCTION: resp
-*
-* PARAMETERS:
-* ~ void
-*
-* RETURN:
-* ~ void
-*
-* DESCRIPTIONS:
-* receive command to SM630_Fprint module
-*
-*******************************************************************************/
-void SM630_fprint::resp()
-{
-  if(!isHardwareSerial) mySerial->listen();
-  fprint_id = -1;
-
-  if(IsSent)
-  {
-    IsSent = false;
-    
-    char rx[6];
-	
-	if(isHardwareSerial)
-	{
-		while(Serial.available()==0);
-		Serial.readBytes(rx,6);
-	}
-	else
-	{
-		while(mySerial->available()==0);
-		mySerial->readBytes(rx,6);
-	}	
-
-    if(rx[3]==0x01&&rx[4]==RX_CORRECT)
-     feedback = RX_CORRECT;
-    
-    else 
-     feedback = RX_ERROR;
-
-     return;
-  }
-  
-  int packet_length = 9;
-  byte resp[packet_length];
-  
-  for(byte j=0;j<packet_length;j++)
-  {
-	if(isHardwareSerial)
-	{
-		while(Serial.available()==0);
-		resp[j]=Serial.read();
-	}
-	else
-	{
-		while(mySerial->available()==0);
-		resp[j]=mySerial->read();
-	}	
-
-    if(j==3) packet_length = resp[3]+5;
-  }
-  
-  if(resp[5]==FP_FOUND) fprint_id = resp[6]*256+resp[7];
-  feedback=resp[5];
-}
-
-/*******************************************************************************
-* PUBLIC FUNCTION: search_fingerprint
-*
-* PARAMETERS:
-* ~ void
-*
-* RETURN:
-* ~ void
-*
-* DESCRIPTIONS:
-* search fingerprint
-*
-*******************************************************************************/
-
-boolean SM630_fprint::search_fingerprint(void)
-{
-  return search_fingerprint(500);
 }
 
 /*******************************************************************************
@@ -577,7 +397,21 @@ String SM630_fprint::rdFlash(int addr,byte data_length)
 
 }
 
-boolean SM630_fprint::uploadtemplate(int id, char *templ)
+/*******************************************************************************
+* PUBLIC FUNCTION: uploadTemplate
+*
+* PARAMETERS:
+* ~ id, templ
+*
+* RETURN:
+* ~ boolean
+*
+* DESCRIPTIONS:
+* Upload fingerprint template with the designated ID from module
+*
+*******************************************************************************/
+
+boolean SM630_fprint::uploadTemplate(int id, char *templ)
 {
 	if(!isHardwareSerial) mySerial->listen();
 	
@@ -592,9 +426,7 @@ boolean SM630_fprint::uploadtemplate(int id, char *templ)
 	if(feedback==RX_ERROR) return false;
 	
 	for(int i=0;i<2;i++)
-	{
-
-		//IsSent = true;	
+	{	
 		unsigned char rx[133];memset(rx,0,sizeof(rx));
 
 		if(isHardwareSerial)
@@ -612,6 +444,8 @@ boolean SM630_fprint::uploadtemplate(int id, char *templ)
 		{
 			templ[i*128+j] = rx[j+4];		
 		}
+		
+		if(i==1) break;
 
 		unsigned char tx[6] = {0x4D,0x58,0x30,0x01,0x01,0xD7};
 		
@@ -628,6 +462,190 @@ boolean SM630_fprint::uploadtemplate(int id, char *templ)
 
 }
 
+//Private
+/*******************************************************************************
+* PRIVATE FUNCTION: cmd
+*
+* PARAMETERS:
+* ~ cmd_code,number
+*
+* RETURN:
+* ~ void
+*
+* DESCRIPTIONS:
+* send command to SM630_Fprint module
+*
+*******************************************************************************/
+void SM630_fprint::cmd(byte cmd_code,int number)
+{  
+  byte packet_content;
+  switch(cmd_code)
+  {
+    case SEARCH_FINGERPRINT:packet_content = 5;break;
+    case EMPTY_DATABASE:packet_content = 1;break;
+    default: packet_content = 3;break;
+  }
+  
+  byte Hbyte = number/256;
+  byte Lbyte = number%256; 
+  byte checksum = 0;
+  
+  byte send_cmd[packet_content+5];
+  
+  for(byte i=0;i<sizeof(send_cmd);i++) send_cmd[i]=0;
+  
+  send_cmd[0] = 0x4D;send_cmd[1] = 0x58;
+  send_cmd[2] = 0x10;send_cmd[3] = packet_content;
+  send_cmd[4] = cmd_code;
+  
+  for(byte i=0;i<sizeof(send_cmd);i++)
+  {
+    checksum+=send_cmd[i];
+  }
 
+  if(packet_content>=3)
+  {
+    send_cmd[5] = Hbyte;send_cmd[6] = Lbyte;
+    checksum+=send_cmd[5];
+    checksum+=send_cmd[6];
+    
+    if(cmd_code==SEARCH_FINGERPRINT)
+    {   
+      for(byte i=7;i>4;i--)
+      {
+        send_cmd[i+2]=send_cmd[i];
+      }
+      send_cmd[5] = 0;send_cmd[6] = 0;
+      checksum+=send_cmd[5];
+      checksum+=send_cmd[6];
+    }
+  }
+  
+  send_cmd[packet_content+5-1]=checksum;
 
+  if(isHardwareSerial)
+	Serial.write(send_cmd,sizeof(send_cmd));
+  else
+	  mySerial->write(send_cmd,sizeof(send_cmd));
+  
+  delay(1);
+  IsSent = true;
+  
+}
 
+/*******************************************************************************
+* PRIVATE FUNCTION: cmd
+*
+* PARAMETERS:
+* ~ cmd_code,number
+*
+* RETURN:
+* ~ void
+*
+* DESCRIPTIONS:
+* send command to SM630_Fprint module
+*
+*******************************************************************************/
+void SM630_fprint::cmd(byte cmd_code)
+{
+  byte packet_content;
+  switch(cmd_code)
+  {
+    case SEARCH_FINGERPRINT:packet_content = 5;break;
+    case EMPTY_DATABASE:packet_content = 1;break;
+    default: packet_content = 3;break;
+  }
+  
+  byte checksum = 0;
+  
+  byte send_cmd[packet_content+5];
+  
+  for(byte i=0;i<sizeof(send_cmd);i++) send_cmd[i]=0;
+  
+  send_cmd[0] = 0x4D;send_cmd[1] = 0x58;
+  send_cmd[2] = 0x10;send_cmd[3] = packet_content;
+  send_cmd[4] = cmd_code;
+  
+  for(byte i=0;i<sizeof(send_cmd);i++)
+  {
+    checksum+=send_cmd[i];
+  }
+  
+  send_cmd[packet_content+5-1]=checksum;
+
+  if(isHardwareSerial)
+	Serial.write(send_cmd,sizeof(send_cmd));
+  else
+	  mySerial->write(send_cmd,sizeof(send_cmd));
+  
+  delay(1);
+  IsSent = true;
+  
+}
+
+/*******************************************************************************
+* PRIVATE FUNCTION: resp
+*
+* PARAMETERS:
+* ~ void
+*
+* RETURN:
+* ~ void
+*
+* DESCRIPTIONS:
+* receive command to SM630_Fprint module
+*
+*******************************************************************************/
+void SM630_fprint::resp()
+{
+  if(!isHardwareSerial) mySerial->listen();
+  fprint_id = -1;
+
+  if(IsSent)
+  {
+    IsSent = false;
+    
+    char rx[6];
+	
+	if(isHardwareSerial)
+	{
+		while(Serial.available()==0);
+		Serial.readBytes(rx,6);
+	}
+	else
+	{
+		while(mySerial->available()==0);
+		mySerial->readBytes(rx,6);
+	}	
+
+    if(rx[3]==0x01&&rx[4]==RX_CORRECT)
+     feedback = RX_CORRECT;
+    
+    else 
+     feedback = RX_ERROR;
+
+     return;
+  }
+  
+  int packet_length = 9;
+  byte resp[packet_length];
+  
+  for(byte j=0;j<packet_length;j++)
+  {
+	if(isHardwareSerial)
+	{
+		while(Serial.available()==0);
+		resp[j]=Serial.read();
+	}
+	else
+	{
+		while(mySerial->available()==0);
+		resp[j]=mySerial->read();
+	}	
+
+    if(j==3) packet_length = resp[3]+5;
+  }
+  
+  if(resp[5]==FP_FOUND) fprint_id = resp[6]*256+resp[7];
+  feedback=resp[5];
+}
