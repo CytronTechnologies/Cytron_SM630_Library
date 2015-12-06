@@ -8,7 +8,7 @@
   
   Steps:
   1. Upload the sketch to Arduino.
-  2. Open Serial Monitor.
+  2. Open Serial Monitor with baud 115200 and no line ending.
   3. A menu should appear and feel free to try it out.
   
   Author: Ng Beng Chet from Cytron Technologies Sdn Bhd
