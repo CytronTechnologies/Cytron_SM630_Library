@@ -1,3 +1,27 @@
+/*
+  This example sketch gives examples of using SM630 fingerprint module.
+  Functions in this sketch includes:
+  - add fingerprint to the fingerprint module database
+  - delete fingerprint to the fingerprint module database
+  - search fingerprint from fingerprint module database
+  - store and read users' names to the flash corresponding to fingerprint ID
+  
+  Starting address of the flash to store or read user name corresponding to fingerprint ID:
+  - fingerprint ID x MAX_NAME_LENGTH
+  e.g. if fingerprint ID is 1 and name to be stored is "Cytron"
+  "Cytron" will be stored at address starting from 1 x MAX_NAME_LENGTH = 20
+  Maximum address for the flash is 65535. (64KB)
+  
+  Steps:
+  1. Upload the sketch to Arduino.
+  2. Open Serial Monitor.
+  3. A menu should appear and feel free to try it out.
+  
+  Author: Ng Beng Chet from Cytron Technologies Sdn Bhd
+  Data:   6/12/2015
+  
+*/
+
 #include <SN-FPR-SM630.h>
 #include <SoftwareSerial.h>
 #define MAX_NAME_LENGTH 20
