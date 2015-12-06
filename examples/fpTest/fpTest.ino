@@ -124,8 +124,8 @@ void del_fingerprint()
   String inputString="";
   boolean isNum = true;
 
-  Serial.println("Deleting fingerprint...");
-  Serial.println("Type designated ID...");
+  Serial.println("Deleting fingerprint..."); //Request fingerprint ID for fingerprint to be deleted
+  Serial.println("Type designated ID...");//Waiting for user to send number in Serial monitor.
   while(Serial.available()==0);
   while (Serial.available()) 
     {
@@ -135,11 +135,11 @@ void del_fingerprint()
       delay(10);
     }
 
-  if(isNum)
+  if(isNum)//if user sends valid integer in Serial monitor
   {
     Serial.print("ID: ");
-    Serial.println(inputString.toInt());
-    fp.del_fingerprint(inputString.toInt());
+    Serial.println(inputString.toInt());// shows integer the user has sent in Serial monitor
+    fp.del_fingerprint(inputString.toInt());// delete fingerprint function
     if(fp.feedback==0x31)
       Serial.println("Operation successful");
     else
@@ -158,8 +158,8 @@ void uploadTemplate()
   String inputString="";
   boolean isNum = true;
 
-  Serial.println("Uploading template from module...");
-  Serial.println("Type designated ID...");
+  Serial.println("Uploading template from module...");//Request fingerprint ID for fingerprint template to be downloaded
+  Serial.println("Type designated ID...");//Waiting for user to send number in Serial monitor.
   while(Serial.available()==0);
   while (Serial.available()) 
     {
@@ -169,17 +169,17 @@ void uploadTemplate()
       delay(10);
     }
 
-  if(isNum)
+  if(isNum)//if user sends valid integer in Serial monitor
   {
     Serial.print("ID: ");
-    Serial.println(inputString.toInt());
+    Serial.println(inputString.toInt());// shows integer the user has sent in Serial monitor
     unsigned char templ[256];
-    fp.uploadTemplate(inputString.toInt(), templ);
+    fp.uploadTemplate(inputString.toInt(), templ);// obtain fingerprint template function
     if(fp.feedback==0x31)
     {
       Serial.println("Operation successful");
       Serial.println("Printing result...");
-      printOutHex(templ);
+      printOutHex(templ); // Serial monitor prints out fingerprint template data
     }
     else
     {
@@ -191,7 +191,7 @@ void uploadTemplate()
     Serial.println("ID is not valid");
 }
 
-void printOutHex(unsigned char *temp)
+void printOutHex(unsigned char *temp) // function to print data in HEX
 {
   for(int i = 0;i<256;i++)
   {
