@@ -44,6 +44,7 @@ void setup() {
   Serial.println("Send 's' to search fingerprint");
   Serial.println("Send 'd' to delete fingerprint");
   Serial.println("Send 'w' to upload template from module");
+  Serial.println("Send 'e' to empty fingerprint database");
   Serial.println();
 }
 
@@ -65,6 +66,8 @@ void serialEvent()
       del_fingerprint(); 
     else if( inChar=='w') // enter obtain fingerprint template function if user sends 'w' in Serial monitor
       uploadTemplate();   
+    else if( inChar=='e') // enter empty database function if user sends 'e' in Serial monitor
+      empty_database(); 
   }
 }
 
@@ -189,6 +192,20 @@ void uploadTemplate()
   }
   else
     Serial.println("ID is not valid");
+}
+
+void empty_database()
+{
+  Serial.println("Emptying fingerprint database...");
+  if(fp.empty_database()) // empty fingerprint database, returns true if successful
+  {
+    Serial.println("Empty database successful"); 
+  } 
+  else
+  {
+    Serial.print("Error: ");
+    Serial.println(fp.feedback,HEX); // Serial monitor prints out hex error code
+  }
 }
 
 void printOutHex(unsigned char *temp) // function to print data in HEX
