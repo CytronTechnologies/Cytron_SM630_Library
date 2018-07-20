@@ -275,12 +275,12 @@ boolean SM630_fprint::wrFlash(int addr, const char* data)
   
 	if(isHardwareSerial)
 	{
-		while(Serial.available()==0);
+		while(Serial.available()==0) yield();
 		Serial.readBytes(rx,6);
 	}
 	else
 	{
-		while(mySerial->available()==0);
+		while(mySerial->available()==0) yield();
 		mySerial->readBytes(rx,6);
 	}
   
@@ -294,12 +294,12 @@ boolean SM630_fprint::wrFlash(int addr, const char* data)
   
 	if(isHardwareSerial)
 	{
-		while(Serial.available()==0);
+		while(Serial.available()==0) yield();
 		Serial.readBytes(rx,7);
 	}
 	else
 	{
-		while(mySerial->available()==0);
+		while(mySerial->available()==0) yield();
 		mySerial->readBytes(rx,7);
 	}
   
@@ -359,12 +359,12 @@ String SM630_fprint::rdFlash(int addr,byte data_length)
 	
 	if(isHardwareSerial)
 	{
-		while(Serial.available()==0);
+		while(Serial.available()==0) yield();
 		Serial.readBytes(rx,6);
 	}
 	else
 	{
-		while(mySerial->available()==0);
+		while(mySerial->available()==0) yield();
 		mySerial->readBytes(rx,6);
 	}
 
@@ -378,12 +378,12 @@ String SM630_fprint::rdFlash(int addr,byte data_length)
 
 	if(isHardwareSerial)
 	{
-		while(Serial.available()==0);
+		while(Serial.available()==0) yield();
 		Serial.readBytes(rx,sizeof(rx));
 	}
 	else
 	{
-		while(mySerial->available()==0);
+		while(mySerial->available()==0) yield();
 		mySerial->readBytes(rx,sizeof(rx));
 	}
 
@@ -431,12 +431,12 @@ boolean SM630_fprint::uploadTemplate(int id, unsigned char *templ)
 
 		if(isHardwareSerial)
 		{
-			while(Serial.available()==0);
+			while(Serial.available()==0) yield();
 			Serial.readBytes(rx,133);
 		}
 		else
 		{
-			while(mySerial->available()==0);
+			while(mySerial->available()==0) yield();
 			mySerial->readBytes(rx,133);//133
 		}
 		
@@ -609,12 +609,12 @@ void SM630_fprint::resp()
 	
 	if(isHardwareSerial)
 	{
-		while(Serial.available()==0);
+		while(Serial.available()==0) yield();
 		Serial.readBytes(rx,6);
 	}
 	else
 	{
-		while(mySerial->available()==0);
+		while(mySerial->available()==0) yield();
 		mySerial->readBytes(rx,6);
 	}	
 
@@ -634,12 +634,12 @@ void SM630_fprint::resp()
   {
 	if(isHardwareSerial)
 	{
-		while(Serial.available()==0);
+		while(Serial.available()==0) yield();
 		resp[j]=Serial.read();
 	}
 	else
 	{
-		while(mySerial->available()==0);
+		while(mySerial->available()==0) yield();
 		resp[j]=mySerial->read();
 	}	
 
